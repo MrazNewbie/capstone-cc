@@ -1,4 +1,4 @@
-FROM node:18.15.0
+FROM node:alpine3.14
 
 WORKDIR /app
 
@@ -8,6 +8,6 @@ RUN npm install
 
 COPY . .
 
-EXPOSE 3000
+
 
 CMD node server.js
