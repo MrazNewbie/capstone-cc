@@ -13,7 +13,7 @@ app.get("/", function (req, res) {
 });
 
 app.get("/:list", async (req, res) => {
-  const query = "SELECT * FROM list WHERE id = ?";
+  const query = "SELECT * FROM lists WHERE id = ?";
   pool.query(query, [req.params.list], (error, results) => {
     if (!results[0]) {
       res.json({ status: "not found!" });
