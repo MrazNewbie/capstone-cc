@@ -1,99 +1,37 @@
-substitutions:
-  _DOCKER_19: DOCKER_VERSION=5:19.03.9~3-0~ubuntu-focal
-  _DOCKER_20: DOCKER_VERSION=5:20.10.14~3-0~ubuntu-focal
-
 steps:
-  # Pre-requisite: build the base OS container; 'temp' is referenced in the
-  # Dockerfile for subsequent steps but is not pushed. Building this shared base
-  # image enables the versioned builders to share base layers.
-  - name: "gcr.io/jolly-mountain/jolly_app"
+  # Step 1: Checkout source code from repository
+  - name: "gcr.io/jolly-mountain/git"
+    args: ["clone", "--depth=1", "<repository-url>", "."]
+
+  # Step 2: Install dependencies
+  - name: "gcr.io/jolly-mountain/npm"
+    args: ["install"]
+
+  # Step 3: Build the application
+  - name: "gcr.io/jolly-mountain/npm"
+    args: ["run", "build"]
+
+  # Step 4: Run tests
+  - name: "gcr.io/jolly-mountain/npm"
+    args: ["test"]
+
+  # Step 5: Publish the image to Container Registry
+  - name: "gcr.io/jolly-mountain/docker"
     args:
       - "build"
-      - "--tag=temp"
-      - "--file=Dockerfile-base"
+      - "-t"
+      - "gcr.io/$PROJECT_ID/jolly_app"
       - "."
-    id: "base"
 
-  # Build all supported versions.
-  - name: "gcr.io/jolly-mountain/jolly_app"
+  - name: "gcr.io/jolly-mountain/docker"
     args:
-      - "build"
-      - "--tag=gcr.io/$PROJECT_ID/docker:19.03.9"
-      # Regional AR Mirrors
-      - "--tag=europe-docker.pkg.dev/$PROJECT_ID/ga/v1/docker:19.03.9"
-      - "--tag=asia-docker.pkg.dev/$PROJECT_ID/ga/v1/docker:19.03.9"
-      - "--tag=us-docker.pkg.dev/$PROJECT_ID/ga/v1/docker:19.03.9"
-      - "--file=Dockerfile-versioned"
-      - "--build-arg=${_DOCKER_19}"
-      - "."
-    id: "19.03.9"
-    wait_for: ["base"]
+      - "push"
+      - "gcr.io/$PROJECT_ID/jolly_app"
 
-  - name: "gcr.io/jolly-mountain/jolly_app"
-    args:
-      - "build"
-      - "--tag=gcr.io/$PROJECT_ID/docker:latest"
-      - "--tag=gcr.io/$PROJECT_ID/docker:20.10.14"
-      # Regional AR Mirrors
-      - "--tag=europe-docker.pkg.dev/$PROJECT_ID/ga/v1/docker:latest"
-      - "--tag=europe-docker.pkg.dev/$PROJECT_ID/ga/v1/docker:20.10.14"
-      - "--tag=asia-docker.pkg.dev/$PROJECT_ID/ga/v1/docker:latest"
-      - "--tag=asia-docker.pkg.dev/$PROJECT_ID/ga/v1/docker:20.10.14"
-      - "--tag=us-docker.pkg.dev/$PROJECT_ID/ga/v1/docker:latest"
-      - "--tag=us-docker.pkg.dev/$PROJECT_ID/ga/v1/docker:20.10.14"
-      - "--file=Dockerfile-versioned"
-      - "--build-arg=${_DOCKER_20}"
-      - "."
-    id: "20.10.14"
-    wait_for: ["base"]
+# Substitutions allow you to parameterize the build configuration
+substitutions:
+  _REPOSITORY_URL: https://github.com/MrazNewbie/capstone-cc.git
 
-  # Future supported versions of docker builder go here.
-
-  # Test each version by using it to run "docker build" on itself.
-  - name: "gcr.io/$PROJECT_ID/docker:19.03.9"
-    args:
-      - "build"
-      - "--file=Dockerfile-versioned"
-      - "--build-arg=${_DOCKER_19}"
-      - "."
-    wait_for: ["19.03.9"]
-
-  - name: "gcr.io/$PROJECT_ID/docker:20.10.14"
-    args:
-      - "build"
-      - "--file=Dockerfile-versioned"
-      - "--build-arg=${_DOCKER_20}"
-      - "."
-    wait_for: ["20.10.14"]
-
-  # Tests for future supported versions of docker builder go here.
-
-  # Here are some things that can be done with this builder:
-
-  # Get info about an image. This effectively runs the "docker inspect" command on
-  # the image built above.
-  - name: "gcr.io/$PROJECT_ID/docker"
-    args: ["inspect", "gcr.io/$PROJECT_ID/docker"]
-    wait_for: ["20.10.14"]
-  # Execute a container. The "busybox" container is executed within the docker
-  # build step to echo "Hello, world!"
-  - name: "gcr.io/$PROJECT_ID/docker"
-    args: ["run", "busybox", "echo", "Hello, world!"]
-    wait_for: ["20.10.14"]
-
+# Images to be pushed to Container Registry
 images:
-  - "gcr.io/$PROJECT_ID/docker:latest"
-  - "gcr.io/$PROJECT_ID/docker:19.03.9"
-  - "gcr.io/$PROJECT_ID/docker:20.10.14"
-  # Regional AR Mirrors
-  - "us-docker.pkg.dev/$PROJECT_ID/ga/v1/docker:latest"
-  - "us-docker.pkg.dev/$PROJECT_ID/ga/v1/docker:19.03.9"
-  - "us-docker.pkg.dev/$PROJECT_ID/ga/v1/docker:20.10.14"
-  - "europe-docker.pkg.dev/$PROJECT_ID/ga/v1/docker:latest"
-  - "europe-docker.pkg.dev/$PROJECT_ID/ga/v1/docker:19.03.9"
-  - "europe-docker.pkg.dev/$PROJECT_ID/ga/v1/docker:20.10.14"
-  - "asia-docker.pkg.dev/$PROJECT_ID/ga/v1/docker:latest"
-  - "asia-docker.pkg.dev/$PROJECT_ID/ga/v1/docker:19.03.9"
-  - "asia-docker.pkg.dev/$PROJECT_ID/ga/v1/docker:20.10.14"
-
-timeout: 1200s
+  - "gcr.io/$PROJECT_ID/jolly_app"
