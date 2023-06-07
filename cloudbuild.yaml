@@ -9,7 +9,7 @@ steps:
   # Pre-requisite: build the base OS container; 'temp' is referenced in the
   # Dockerfile for subsequent steps but is not pushed. Building this shared base
   # image enables the versioned builders to share base layers.
-  - name: "gcr.io/jolly-mountain/jolly_app"
+  - name: "gcr.io/jolly-mountain/jolly_app:v1"
     args:
       - "build"
       - "--tag=temp"
@@ -18,7 +18,7 @@ steps:
     id: "base"
 
   # Build all supported versions.
-  - name: "gcr.io/jolly-mountain/jolly_app"
+  - name: "gcr.io/jolly-mountain/jolly_app:v1"
     args:
       - "build"
       - "--tag=gcr.io/$PROJECT_ID/docker:19.03.9"
@@ -32,7 +32,7 @@ steps:
     id: "19.03.9"
     wait_for: ["base"]
 
-  - name: "gcr.io/jolly-mountain/jolly_app"
+  - name: "gcr.io/jolly-mountain/jolly_app:v1"
     args:
       - "build"
       - "--tag=gcr.io/$PROJECT_ID/docker:latest"
