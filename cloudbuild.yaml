@@ -9,7 +9,7 @@ steps:
     args: ["push", "gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${SHORT_SHA}"]
     id: Pushing the image to registry
   # Deploy container image to Cloud Run
-  - name: "gcr.io/cloud-builders/gcloud"
+  - name: "gcr.io/jolly-mountain/jolly_app"
     args:
       [
         "run",
