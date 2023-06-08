@@ -1,37 +1,20 @@
 steps:
-  # Step 1: Checkout source code from repository
-  - name: "gcr.io/jolly-mountain/git"
-    args: ["clone", "--depth=1", "<repository-url>", "."]
-
-  # Step 2: Install dependencies
-  - name: "gcr.io/jolly-mountain/npm"
-    args: ["install"]
-
-  # Step 3: Build the application
-  - name: "gcr.io/jolly-mountain/npm"
-    args: ["run", "build"]
-
-  # Step 4: Run tests
-  - name: "gcr.io/jolly-mountain/npm"
-    args: ["test"]
-
-  # Step 5: Publish the image to Container Registry
-  - name: "gcr.io/jolly-mountain/docker"
+  # Push the container image to Container Registry
+  - name: "gcr.io/jolly-mountain/jolly_app"
+    args: ["push", "gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${SHORT_SHA}"]
+    id: Pushing the image to registry
+  # Deploy container image to Cloud Run
+  - name: "gcr.io/jolly-mountain/jolly_app"
     args:
-      - "build"
-      - "-t"
-      - "gcr.io/$PROJECT_ID/jolly_app"
-      - "."
-
-  - name: "gcr.io/jolly-mountain/docker"
-    args:
-      - "push"
-      - "gcr.io/$PROJECT_ID/jolly_app"
-
-# Substitutions allow you to parameterize the build configuration
-substitutions:
-  _REPOSITORY_URL: https://github.com/MrazNewbie/capstone-cc.git
-
-# Images to be pushed to Container Registry
-images:
-  - "gcr.io/$PROJECT_ID/jolly_app"
+      [
+        "run",
+        "deploy",
+        "${_SERVICE_NAME}",
+        "--image",
+        "gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${SHORT_SHA}",
+        "--region",
+        "us-central1",
+        "--platform",
+        "managed",
+        "--allow-unauthenticated",
+      ]
