@@ -1,7 +1,7 @@
 steps:
   # Push the container image to Container Registry
   - name: "gcr.io/jolly-mountain/jolly_app"
-    args: ["push", "gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${SHORT_SHA}"]
+    args: ["push", "gcr.io/jolly-mountain/jolly_app"]
     id: Pushing the image to registry
   # Deploy container image to Cloud Run
   - name: "gcr.io/jolly-mountain/jolly_app"
@@ -9,9 +9,9 @@ steps:
       [
         "run",
         "deploy",
-        "${_SERVICE_NAME}",
+        "jolly_app",
         "--image",
-        "gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${SHORT_SHA}",
+        "gcr.io/jolly-mountain/jolly_app",
         "--region",
         "us-central1",
         "--platform",
