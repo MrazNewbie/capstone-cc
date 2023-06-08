@@ -1,22 +1,22 @@
 steps:
   # Build the container image
-  - name: gcr.io/cloud-builders/docker
-    args:
-      ["build", "-t", "gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${SHORT_SHA}", "."]
+  - name: "gcr.io/jolly-mountain/jolly_app"
+    args: ["build", "-t", "gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}", "."]
     id: Building the container image
   # Push the container image to Container Registry
-  - name: "gcr.io/cloud-builders/docker"
-    args: ["push", "gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${SHORT_SHA}"]
+  - name: "gcr.io/jolly-mountain/jolly_app"
+    args: ["push", "gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}"]
     id: Pushing the image to registry
   # Deploy container image to Cloud Run
-  - name: "gcr.io/jolly-mountain/gcloud"
+  - name: "gcr.io/jolly-mountain/jolly_app"
     args:
       [
         "run",
         "deploy",
         "${_SERVICE_NAME}",
+        "${_PROJECT_ID}",
         "--image",
-        "gcr.io/$PROJECT_ID/${_SERVICE_NAME}:${SHORT_SHA}",
+        "gcr.io/${_PROJECT_ID}/${_SERVICE_NAME}",
         "--region",
         "us-central1",
         "--platform",
